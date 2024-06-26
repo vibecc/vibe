@@ -1,0 +1,26 @@
+{
+  "name": "vibe",
+  "version": "1.0.0",
+  "description": "User-friendly and compact C++ Web Framework",
+  "scripts": {
+    "build": "cmake . && cmake --build .",
+    "install": "cmake --install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vibecc/core.git"
+  },
+  "bugs": {
+    "url": "https://github.com/vibecc/core/issues"
+  },
+  "keywords": [
+    "http",
+    "non-blocking-io",
+    "web",
+    "c++",
+    "cpp17"
+  ],
+  "license": "MIT",
+  "private": false
+}

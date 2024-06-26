@@ -1,0 +1,38 @@
+# Archivos y directorios generados por CMake
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Archivos ejecutables
+*.exe
+*.out
+
+# Archivos objeto y bibliotecas
+*.o
+*.a
+*.so
+
+# Archivos de respaldo y temporales
+*~
+*.swp
+*.swo
+
+# Archivos específicos de C++
+*.gch
+*.pch
+
+# Dependencias de IDE
+.vscode/
+.idea/
+*.sln
+*.vcxproj
+*.user
+*.filters
+
+/vcpkg/
+
+# Archivos de configuración específicos del sistema
+CMakeUserPresets.json
+CMakeSettings.json
