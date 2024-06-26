@@ -31,7 +31,7 @@ To install Vibe
 <img alt="CMake" src="https://img.shields.io/badge/CMake-%23008FBA.svg?style=for-the-badge&logo=cmake&logoColor=white"/>
 
 ```shell
-$ git clone https://github.com/vibecc/core.git
+$ git clone https://github.com/vibecc/vibe.git
 $ cd Vibe
 $ cmake .
 $ cmake --build .
