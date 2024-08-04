@@ -6,7 +6,7 @@ int main() {
     router.setPort(8080);
 
     std::string auth_id = "123";
-    std::string secret = "my secret!";
+    std::string data = "data";
 
     router.get("/",{
             [&](Query &web) {
@@ -23,7 +23,7 @@ int main() {
 
             },
             [&](Query &control) {
-                control.send("my secret!");
+                control.send(data);
             }
     });
 

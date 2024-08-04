@@ -19,16 +19,7 @@ public:
             return {notify::noPath(path), "404"};
         }
         try {
-            std::ifstream reader;
-            reader.open(path);
-            string chunk;
-            string body;
-            while(getline(reader, chunk)){
-                body += chunk;
-            }
-            reader.clear();
-            reader.close();
-            return {body, "200"};
+            return {neosys::process::readFile(path), "200"};
         } catch (std::exception &e) {
             return {e.what(), "500"};
         }

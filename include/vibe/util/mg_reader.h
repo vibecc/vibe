@@ -48,7 +48,7 @@ public:
                     return {notify_html::noPath(), "404"};
                 }
 
-                string body = readFile(path);
+                string body = process::readFile(path);
                 string buffer{};
 
                 for (int global = 0x0; global < reserve; global++)
@@ -109,25 +109,9 @@ public:
             return notify_html::noFIle(name);
         }
 
-        body.insert(coord.first, readFile(target));
+        body.insert(coord.first, process::readFile(target));
         string newest = body;
         return newest;
-    }
-
-     static string readFile(const string& target)
-    {
-
-       std::ifstream reader(target.c_str());
-        string chunk;
-        string module;
-
-        while (getline(reader, chunk))
-        {
-            module += chunk;
-        }
-        std::cout << std::flush;
-        reader.close();
-        return module;
     }
 
     static  string normalize(string target)

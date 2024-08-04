@@ -6,125 +6,102 @@
 #include <fstream>
 #include <iostream>
 #include <filesystem>
-#include <random>
 
 #include "local_utility.h"
+#include "nterminal.h"
+#include "sysprocess.h"
 
 using std::string;
 using std::make_shared;
 using std::shared_ptr;
+using neosys::process;
 
 class CppReader {
 public:
     CppReader() = default;
      static std::pair<string,string> processing(const string& path) {
 
-        if(!std::filesystem::exists(std::filesystem::path(path))) {
+        if(!std::filesystem::exists(std::filesystem::path(path)))
             return {notify::noPath(path), "404"};
-        }
 
         try {
 
-  string nombre{},
-            chunk,
-            body,
-            ruta{},
-            command,
-            compile_container,
-            code{};
-
         bool init = false;
         std::pair<int, int> coords;
-        code = BASE;
+        string code = BASE;
+        string raw_html = process::readFile(path);
 
-        std::ifstream reader(path);
-
-        while (getline(reader, chunk)){
-            body += chunk;
-        }
-        reader.close();
-
-        for (size_t iterator = 0; iterator < body.length() - 1; iterator++)
-        {
-            if (init)
-            {
-                if (body[iterator] == CODE_LOCATE) {
-                    coords.second = (int)iterator;
+        for (size_t iterator = 0; iterator < raw_html.length() - 1; iterator++) {
+            if (init) {
+                if (raw_html[iterator] == CODE_LOCATE) {
+                    coords.second = static_cast<int>(iterator);
                     break;
                 }
-                else{
-                    code += body[iterator];
-                }
+                    code += raw_html[iterator];
             }
-
-            if (body[iterator] == CODE_LOCATE && !init){
-                coords.first = (int)iterator;
+            if (raw_html[iterator] == CODE_LOCATE && !init){
+                coords.first = static_cast<int>(iterator);
                 init = true;
-                continue;
             }
         }
 
-        std::mt19937 gen;
-        gen.seed(std::random_device()());
-        std::uniform_int_distribution<std::mt19937::result_type> dist;
 
-        nombre = std::to_string(dist(gen));
-        ruta = WORK_PATH + nombre;
+            std::string file_path, code_file, file_result;
 
-        std::ofstream writter;
-        writter.open((ruta + CPP_).c_str());
+            file_path.append(WORK_PATH).append(std::to_string(process::random()));
 
-        for (auto &it : code){
-            writter << it;
-        }
+            code_file.append(file_path).append(CPP_);
+            file_result.append(file_path).append(TXX_);
 
-        writter << CODE_END;
-        writter.close();
+            code.append(CODE_END);
+            process::writeFile(code_file, code);
 
-        command = GPP_  +
-                  ruta   +
-                  CPP_  +
-                  OUT   +
-                  ruta   +
-                  AFTER +
-                   ruta  +
-                   DATA +
-                   ruta  +
-                   TXX_;
+            vector<const char*> compile;
+            compile.push_back("/bin/g++");
+            compile.push_back("-std=c++17");
+            compile.push_back( code_file.c_str());
+            compile.push_back( "-o" );
+            compile.push_back( file_path.c_str());
+            compile.push_back( nullptr);
 
-        int result = system(command.c_str());
+            if(process::run_command(compile, file_result) == VB_NVALUE) {
+                std::filesystem::remove(code_file);
+                return { replaceCoords(raw_html, coords, readAndRemove(file_result)) ,"400"};
+            }
 
-            reader.open(ruta + TXX_);
-        chunk = " ";
+            vector<const char*> execute;
+            execute.push_back( file_path.c_str());
+            execute.push_back( nullptr);
 
-        while (getline(reader, chunk))
-        {
-            compile_container += chunk;
-        }
-        if(result==-1)
-            compile_container += " -1";
+            if(process::run_command(execute, file_result)) {
+                std::filesystem::remove(file_path);
+                std::filesystem::remove(code_file);
+                return { replaceCoords(raw_html, coords, readAndRemove(file_result)) ,"400"};
+            }
 
-        reader.close();
+        const string execution_process = process::readFile(file_result);
 
-        for (int i = coords.first; i <= coords.second; i++){
-            body[i] = 32;
-        }
+        std::filesystem::remove(file_path);
+        std::filesystem::remove(code_file);
+        std::filesystem::remove(file_result);
 
-        std::filesystem::remove(ruta);
-        std::filesystem::remove(ruta + CPP_);
-        std::filesystem::remove(ruta + TXX_);
-
-        body.insert(coords.first, compile_container);
-
-        return {body, "200"};
-
+        return { replaceCoords(raw_html, coords, execution_process) ,"200"};
         }catch (std::exception &e) {
-
             return {e.what(), "500"};
-
         }
-
     }
+
+    static string replaceCoords(string content, const std::pair<int, int > &coords, const string& data) {
+         for (int i = coords.first; i <= coords.second; i++)
+             content[i] = 32;
+         content.insert(coords.first, data);
+         return  content;
+     }
+    static string readAndRemove(const string& path) {
+        string temp = process::readFile(path);
+        std::filesystem::remove(path);
+         return temp;
+     }
 };
 
 #endif // ! CPP_READER_HPP

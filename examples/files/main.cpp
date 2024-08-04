@@ -20,5 +20,11 @@ int main() {
 
 
 
+    router.get("/stress",{[&](Query &web) {
+
+        web.readFile("./stress.json", "application/json");
+    }});
+
+
     router.listen();
 }

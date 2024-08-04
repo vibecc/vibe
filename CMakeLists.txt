@@ -18,7 +18,8 @@ file(GLOB_RECURSE SOURCES
 )
 
 
-add_library(vibe STATIC ${SOURCES})
+add_library(vibe STATIC ${SOURCES}
+        include/vibe/vibe.h)
 
 install(TARGETS vibe
         ARCHIVE DESTINATION lib
