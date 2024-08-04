@@ -19,12 +19,13 @@
 #include <fcntl.h>
 #include <random>
 #include <fstream>
+#include <array>
 
 namespace neosys {
 
     class process {
-       static const char* log_path;
-       static std::string path;
+       static  const char* const log_path;
+       static  const std::string path;
     public:
         [[maybe_unused]] static inline void _wait(int milliseconds)  { std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds)); }
         [[maybe_unused]] static int run_command(const std::vector<const char*> &args, const std::string& _path = path);

@@ -73,7 +73,7 @@ public:
             execute.push_back( file_path.c_str());
             execute.push_back( nullptr);
 
-            if(process::run_command(execute, file_result)) {
+        if(process::run_command(execute, file_result) == VB_NVALUE) {
                 std::filesystem::remove(file_path);
                 std::filesystem::remove(code_file);
                 return { replaceCoords(raw_html, coords, readAndRemove(file_result)) ,"400"};
