@@ -1,12 +1,14 @@
+#include <memory>
+
 #include "../include/vibe/sockets.h"
 
-Engine::Engine(uint16_t _xport) : PORT(_xport) {}
+Engine::Engine(const uint16_t port) : PORT(port) {}
 
 int Server::Close() {
      try {   
 
           if (close(*socket_id) < 0) {
-               throw std::range_error("Fallo al cerrar el socket, Server");
+               throw std::range_error("Failed to close socket");
           }
           return MG_OK;
      }
@@ -16,10 +18,10 @@ int Server::Close() {
      }
 }
 
-int Engine::setPort(uint16_t xPort) {
+int Engine::setPort(const uint16_t xPort) {
      try {
-          PORT =  xPort;
-          if(!PORT) throw std::range_error("error al asignar el puerto");
+          PORT = xPort;
+          if(PORT <= 0) throw std::range_error("Failed to set port");
           return MG_OK;
      }
      catch (const std::exception &e) {
@@ -34,7 +36,7 @@ int Engine::getPort() const {
                return PORT;
           }
           else {
-               throw std::range_error("error al intentar obtener el puerto");
+               throw std::range_error("Failed to get port");
           }
      }
      catch (const std::exception &e) {
@@ -45,13 +47,13 @@ int Engine::getPort() const {
 
 
 
-int Engine::setBuffer(int _tamx) {
+int Engine::setBuffer(int size) {
      try {
           if (buffer_size == nullptr) {
-               buffer_size = make_shared<int>(_tamx);
+               buffer_size = make_shared<int>(size);
           }
-          buffer_size.reset(new int(_tamx));
-          if(*buffer_size != _tamx) throw std::range_error("error al intentar asignar el buffer");
+          buffer_size = std::make_shared<int>(size);
+          if(*buffer_size != size) throw std::range_error("filed to set buffer_size");
           return MG_OK;
      }
      catch (const std::exception &e) {
@@ -68,8 +70,8 @@ void Server::setSessions(int max) {
                static_sessions = make_shared<int>(max);
                return;
           }
-          static_sessions.reset(new int(max));
-          if(*static_sessions != max) throw std::range_error("error al asignar las sesiones");
+          static_sessions = std::make_shared<int>(max);
+          if(*static_sessions != max) throw std::range_error("Failed to set sessions");
      }
      catch (const std::exception &e) {
           std::cerr << e.what() << '\n';
@@ -94,7 +96,7 @@ int Server::on() {
 
          if ((socket_id = make_shared<int>(
                  socket(DOMAIN, TYPE, PROTOCOL))) == nullptr) {
-             throw std::range_error("Fallo al crear el socket");
+             throw std::range_error("Failed to create domain socket");
          }
 
          if (setsockopt(*socket_id,
@@ -103,22 +105,22 @@ int Server::on() {
                         SO_REUSEPORT,
                         &*option_mame,
                         sizeof(*option_mame)) != 0x0) {
-             throw std::range_error("error al establecer el servidor");
+             throw std::range_error("Failed to set socket options");
          }
 
          if(setNonblocking(*socket_id) == MG_ERROR)
-             throw std::runtime_error("Error al establecer el socket principal como no bloqueante");
+             throw std::runtime_error("Failed to set nonblocking");
 
          address.sin_family = AF_INET;
          address.sin_addr.s_addr = INADDR_ANY;
          address.sin_port = htons(PORT);
 
          unlink("127.0.0.1");
-         if (bind(*socket_id, (struct sockaddr *)&address, sizeof(address)) < 0) {
-               throw std::range_error("error al enlazar el servidor");
+         if (bind(*socket_id, reinterpret_cast<struct sockaddr *>(&address), sizeof(address)) < 0) {
+               throw std::range_error("Failed to bind socket");
           }
          if (listen(*socket_id, 3) < 0x0) {
-              throw std::range_error("error al escuchar el puerto");
+              throw std::range_error("Failed to listen on socket");
           }
 
          return MG_OK;
@@ -136,9 +138,9 @@ void Server::getResponseProcessing() {
         vector<char> buffer;
         buffer.resize(*buffer_size);
 
-        auto totalbyes = read(*socket_id, buffer.data(), *buffer_size);
+        const auto total_bytes = read(*socket_id, buffer.data(), *buffer_size);
 
-        for (auto it = 0; it <= totalbyes; it++) {
+        for (auto it = 0; it <= total_bytes; it++) {
             if (buffer[it] == 0)
                 break;
             if(buffer[it] == UnCATCH_ERROR_CH)
@@ -147,47 +149,49 @@ void Server::getResponseProcessing() {
                 continue;
             base += buffer[it];
         }
-        if(base.empty()) throw std::range_error("error, el mensaje no se recibio");
+        if(base.empty()) throw std::range_error("response is empty");
         buffereOd_data = make_shared<string>(base);
     }
     catch (const std::exception &e) { std::cerr << e.what() << '\n'; }
 }
 
-void Server::setResponse(char buffer[DEF_BUFFER_SIZE]) {
-     std::string raw(buffer);
-     if(!raw.empty()) {
+void Server::setResponse(const std::array<char,DEF_BUFFER_SIZE> &buffer) {
+     if( std::string raw(buffer.begin(), buffer.size()) ; !raw.empty()) {
           buffereOd_data = make_shared<string>(raw);
      }
 }
 
-void Server::sendResponse(const string& _msg) {
+void Server::sendResponse(const string& _msg) const {
      SendData data;
      data.socket = *socket_id;
      data.data = _msg;
 
-     epoll_event event;
+     epoll_event event{};
      event.events = EPOLLOUT | EPOLLET;
      event.data.ptr = &data;
 
      if (epoll_ctl(epoll_fd, EPOLL_CTL_MOD, *socket_id, &event) == -1) {
-          std::cerr << "Error al registrar evento de escritura: " << strerror(errno) << std::endl;
+          std::cerr << "epoll_ctl " << strerror(errno) << std::endl;
      }
 
-     epoll_event events[1];
+     std::array<epoll_event, 1> events{};
 
-     int n = epoll_wait(epoll_fd, events, 1, -1);
-     if(n == -1) {
-          std::cerr << "epoll_wait" << strerror(errno) << std::endl;
+     if(const int n = epoll_wait(epoll_fd, events.data(), 1, -1) ; n == -1) {
+          std::cerr << "epoll_wait " << strerror(errno) << std::endl;
           return;
      }
+     
+     bool hasEPOLLOUT = (events[0].events & EPOLLOUT) != 0;
 
-     if(events[0].events & EPOLLOUT) {
-       int bytesw =  send(data.socket, data.data.c_str(), data.data.size(), 0);
-          if (bytesw == -1) {
+     if(hasEPOLLOUT) {
+
+          if ( const ssize_t bytes_send =  send(data.socket, data.data.c_str(), data.data.size(), 0) ; bytes_send == -1) {
+
                std::cerr << "Error: Sending data" << std::endl;
                epoll_ctl(epoll_fd, EPOLL_CTL_DEL, data.socket, nullptr);
                close(data.socket);
-          } else if(bytesw == 0) {
+
+          } else if(bytes_send == 0) {
                epoll_ctl(epoll_fd, EPOLL_CTL_DEL, data.socket, nullptr);
                close(data.socket);
           } else {

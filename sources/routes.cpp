@@ -1,11 +1,10 @@
 #include "../include/vibe/routes.hpp"
 
-dataRender * Query::_cache = nullptr;
 
 string  Query::getData() const noexcept                   {     return last;     }
-bool    Query::getNext() const noexcept                   {     return nexteable;   }
-void    Query::next()    noexcept                         {     nexteable = true;   }
-void    Query::lock()    noexcept                         {     nexteable = false;  }
+bool    Query::getNext() const noexcept                   {     return next_enable;   }
+void    Query::next()    noexcept                         {     next_enable = true;   }
+void    Query::lock()    noexcept                         {     next_enable = false;  }
 
 
 void Query::json(const string& _txt, const std::function<void()>& callback) noexcept {
@@ -66,13 +65,13 @@ headers += box.generate();
 }
 
 long Query::getTimeKey() const noexcept {
-    return timekey;
+    return time_key;
 }
 void Query::guard(const long &key, string custom_msg) noexcept {
     if(not custom_msg.empty())
       guardMsg = std::move(custom_msg);
 
-    timekey = key;
+    time_key = key;
 }
 
 string Query::getGuardMsg() const noexcept {

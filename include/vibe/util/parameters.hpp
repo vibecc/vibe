@@ -4,7 +4,8 @@
 #include <utility>
 #include <vector>
 #include <string>
-#include <iostream>
+#include  <sstream>
+#include <chrono>
 
 using std::string;
 using std::vector;
@@ -15,9 +16,9 @@ class param_box{
     public:
 
     param_box(string, string);
-    explicit param_box(std::pair<string,string> conten) : _body(conten) {
-        name = std::move(conten.first);
-        value = std::move(conten.second);
+    explicit param_box(std::pair<string,string> content) : _body(content) {
+        name = std::move(content.first);
+        value = std::move(content.second);
  }  
 
     string name;
@@ -38,10 +39,10 @@ public:
 
   param_box operator[](int);
 
-  void setConten(vector<std::pair<string,string>>&);
+  void setContent(vector<std::pair<string,string>>&);
 
   [[maybe_unused]] inline void clear() { _list.clear(); }
-  [[maybe_unused]] inline bool empty() const {return _list.empty();}
+  [[maybe_unused]] [[nodiscard]] inline bool empty() const {return _list.empty();}
 
   [[maybe_unused]] bool exist(const string&);
 
@@ -54,22 +55,27 @@ public:
 
 struct utility_t {
   static string prepare_basic(const string& _txt, const string& _type, const string& headers, const string& status="200") {
-    return         "HTTP/1.1 "+status+" OK\n"
-                   "Server: Vibe/1.0\n"
-                   "Content-Type: "+_type+"\n"
-                   "Cache-Control: Expires"
-                   "Content-Length: " + std::to_string(_txt.length()) + "\n"
-                   "Accept-Ranges: bytes\n"
-                    + headers +
-                   "Connection: close\n"
-                   "\n" +
-                   _txt;
+
+    std::stringstream body;
+    body <<  "HTTP/1.1 " << status << " OK\n"
+         <<  "Server: Vibe/1.0\n"
+         <<  "Content-Type: "<<_type<<"\n"
+         <<  "Cache-Control: Expires"
+         <<  "Content-Length: " << std::to_string(_txt.length()) << "\n"
+         <<  "Accept-Ranges: bytes\n"
+         <<  headers
+         <<  "Connection: close\n"
+         <<  "\n"
+         <<  _txt;
+    return body.str();
   }
 
-    [[maybe_unused]] static string guard_route(const long seconds, string msg = "") {
+    [[maybe_unused]] static string guard_route(const std::chrono::duration<double>::rep seconds, string msg = "") {
 
-    const string chunk = not msg.empty() ? std::move(msg) : "wait, this route has a " +std::to_string(seconds)+ " second cooldown";
-    return prepare_basic("{\"message\":\"" +  chunk  + "\"}", "application/json", "", "401");
+    std::stringstream message;
+    message << R"lit({"message":")lit"<< string(not msg.empty() ? std::move(msg) : "wait, this route has a " + std::to_string(seconds)+" second cooldown") << R"lit("})lit";
+
+    return prepare_basic( message.str(), "application/json", "", "401");
   }
 
     [[maybe_unused]] static int toInt(const string& data) {
@@ -95,7 +101,7 @@ struct utility_t {
                            "Accept-Ranges: bytes\n"
                            "Connection: close\n"
                            "\n"
-                           "{\"error\":\"this route is not defined\"}";
+                           R"lit({"error":"this route is not defined"})lit";
 
 
 

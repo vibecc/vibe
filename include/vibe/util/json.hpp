@@ -46,6 +46,6 @@ struct JSON_t {
         return json();
     }
 };
-[[maybe_unused]] typedef JSON_t<string> JSON_s;
+using JSON_s = JSON_t<string>;
 
 #endif // ! JSON_HPP

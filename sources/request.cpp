@@ -59,7 +59,7 @@ void Request::setRawHeadersData(string &&_raw){
 Param_t Request::getHeaders() {
   Param_t nuevo;
   try {
-    nuevo.setConten(_headers);
+    nuevo.setContent(_headers);
     return nuevo;
   }
   catch(const std::exception& e) {
@@ -71,7 +71,7 @@ Param_t Request::getHeaders() {
 Param_t Request::getParameters() {
     Param_t nuevo;
     try {
-       nuevo.setConten(_parameters);
+       nuevo.setContent(_parameters);
        return nuevo;
     }
     catch(const std::exception& e) {

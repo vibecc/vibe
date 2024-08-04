@@ -53,19 +53,17 @@ struct Headers_t {
         return response;
     }
 };
-typedef Headers_t<string> HEADERS;
+using HEADERS = Headers_t<string>;
 
 
 class Query {
 
-    bool nexteable  { false};
-    long timekey    {0};
+    bool next_enable  { false};
+    long time_key    {0};
 
     string response {"default"},
            last,
            headers, guardMsg{};
-
-    static dataRender *_cache;
 
     public:
     Query()  = default;
@@ -96,7 +94,7 @@ class Query {
     [[maybe_unused]] void    readFile(const string&,const string&, const std::function<void()>& callback=[]()->void{}) noexcept;
     [[maybe_unused]] void    readFileX(const string&,const string&, const std::function<void()>& callback=[]()->void{}) noexcept;
     [[maybe_unused]] void    compose(const string&,int, const std::function<void()>& callback=[]()->void{}) noexcept;
-    [[maybe_unused]] void    render(const string&, const std::function<dataRender(dataRender&)>& callback=[](dataRender&)->dataRender{ return *_cache; }) noexcept;
+    [[maybe_unused]] void    render(const string&, const std::function<dataRender(dataRender&)>& callback=[](dataRender&)->dataRender{ return dataRender(nullptr); }) noexcept;
 
     // PARAMS:  CONTENT  STATUS OPTIONAL CALLBACK
     [[maybe_unused]] void    json(const string&, int, const std::function<void()>& callback=[]()->void{}) noexcept;
@@ -118,11 +116,10 @@ struct Core_init_t  {
 
     [[nodiscard]] [[maybe_unused]] inline size_t size() const noexcept { return functions.size(); }
 
-     std::pair<string, long> execute(string _raw, string headers, std::unique_ptr<string> &guardmsg) {
+     std::pair<string, std::chrono::duration<double>::rep> execute(string _raw, string headers, std::unique_ptr<string> &guard_msg) {
         remote_control = new Query();
 
         string response{};
-        long timekey{0};
 
         remote_control->body.clear_parameters();
         remote_control->body.setRawParametersData(std::move(_raw));
@@ -140,26 +137,27 @@ struct Core_init_t  {
         }
 
         response += remote_control->getData();
-        timekey = remote_control->getTimeKey();
-        if(timekey > 0)
-            guardmsg = std::make_unique<string>(remote_control->getGuardMsg());
+        long time_key = remote_control->getTimeKey();
+        if(time_key > 0)
+            guard_msg = std::make_unique<string>(remote_control->getGuardMsg());
 
         delete remote_control;
-        return {response, timekey};
+        return {response, time_key};
     }
 };
 
-typedef Core_init_t<std::function<void(Query&)>> MiddlewareList;
+using MiddlewareList = Core_init_t<std::function<void(Query&)>> ;
 
 struct listen_routes {
     listen_routes(string _route, MiddlewareList _funcs, string _type) : middlewares(std::move(_funcs)){
-    route = std::move(_route);
-    route.setType(std::move(_type));
+        route = std::move(_route);
+        route.setType(std::move(_type));
+        time_key = 0;
     }
 
     Route route;
     MiddlewareList middlewares;
-    long timekey;
+    std::chrono::duration<double>::rep time_key;
     std::chrono::time_point<std::chrono::system_clock> time_point{};
     std::unique_ptr<string> guardRouteMsg = nullptr;
 };
@@ -167,9 +165,9 @@ struct listen_routes {
 struct Route_t {
     Route_t(string _r, MiddlewareList _m, string _t) : route(std::move(_r)), middlewares(std::move(_m)), type(std::move(_t)) { }
     Route_t()= default;
-    const string route;
-    const string type;
+    string route;
     MiddlewareList middlewares;
+    string type;
 
 };
 

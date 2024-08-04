@@ -6,8 +6,6 @@
 #include "util/request.hpp"
 #include "util/enums.h"
 #include "util/worker_core.h"
-#include "util/wInstances.h"
-
 #include <thread>
 #include <memory>
 #include <string>
@@ -17,21 +15,17 @@ using std::make_unique;
 using std::string;
 
 using workers::eWorkers;
-using workers::wInstances;
 
 template <class T>
 class Vibe {
 
     shared_ptr<::eWorkers<T>> eWorkers = nullptr;
-    shared_ptr<::wInstances<T>> wInstances = nullptr;
 
     std::unordered_map<string, std::unique_ptr<listen_routes>> routes;
     std::shared_ptr<T> tcpControl;
     std::shared_ptr<HTTP_QUERY> qProcess = nullptr;
 
     uint16_t PORT{enums::neo::eSize::DEF_PORT};
-
-    std::mutex lock_process;
 
     void tcpInt();
 
@@ -85,44 +79,44 @@ int Vibe<T>::http_response(const string &endpoint, MiddlewareList middlewareList
 }
 
 template <class T>
-[[maybe_unused]] int Vibe<T>::get(const string& route,const MiddlewareList &_funcs){
-    return http_response(route, _funcs, GET_TYPE);
+[[maybe_unused]] int Vibe<T>::get(const string& route,const MiddlewareList &middlewares){
+    return http_response(route, middlewares, GET_TYPE);
 }
 template <class T>
-[[maybe_unused]] int Vibe<T>::post(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, POST_TYPE );
+[[maybe_unused]] int Vibe<T>::post(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, POST_TYPE );
 }
 template <class T>
-[[maybe_unused]] int Vibe<T>::put(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, PUT_TYPE);
+[[maybe_unused]] int Vibe<T>::put(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, PUT_TYPE);
 }
 template <class T>
-[[maybe_unused]] int Vibe<T>::deleteX(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, DELETE_TYPE);
+[[maybe_unused]] int Vibe<T>::deleteX(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, DELETE_TYPE);
 }
 template <class T>
-[[maybe_unused]] int Vibe<T>::patch(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, PATCH_TYPE);
+[[maybe_unused]] int Vibe<T>::patch(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, PATCH_TYPE);
 }
 template <class T>
-[[maybe_unused]] int Vibe<T>::head(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, HEAD_TYPE);
+[[maybe_unused]] int Vibe<T>::head(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, HEAD_TYPE);
 }
 template <class T>
-[[maybe_unused]] int Vibe<T>::options(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, OPTIONS_TYPE);
+[[maybe_unused]] int Vibe<T>::options(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, OPTIONS_TYPE);
 }
 template <class T>
-[[maybe_unused]]  int Vibe<T>::link(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, LINK_TYPE);
+[[maybe_unused]]  int Vibe<T>::link(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, LINK_TYPE);
 }
 template <class T>
-[[maybe_unused]] int Vibe<T>::unlink(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, UNLINK_TYPE);
+[[maybe_unused]] int Vibe<T>::unlink(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, UNLINK_TYPE);
 }
 template <class T>
-[[maybe_unused]] int Vibe<T>::purge(const string& route,const MiddlewareList &_funcs) {
-    return http_response(route, _funcs, PURGE_TYPE);
+[[maybe_unused]] int Vibe<T>::purge(const string& route,const MiddlewareList &middlewares) {
+    return http_response(route, middlewares, PURGE_TYPE);
 }
 
 template <class T>
@@ -152,17 +146,18 @@ int Vibe<T>::setPort(const uint16_t _port) noexcept {
 template<class T>
 void Vibe<T>::tcpInt() {
 
-    eWorkers = make_shared<::eWorkers<T>>();
-    wInstances = make_shared<::wInstances<T>>();
-    eWorkers->Main =make_unique<workers::pMain_t<T>>(wInstances->workers, wInstances->conditions, tcpControl,  lock_process, routes);
-
     tcpControl = make_shared<T>();
     tcpControl->setBuffer(BUFFER);
     tcpControl->setPort(PORT);
     tcpControl->setSessions(SESSION);
+
+    eWorkers = make_shared<::eWorkers<T>>();
+    eWorkers->Main =make_unique<workers::pMain_t<T>>(tcpControl, routes);
+
+
 }
-typedef Vibe<Server> Router;
-typedef utility_t Convert;
+using Router = Vibe<Server>;
+using Convert = utility_t;
 
 
 #endif // VIBE_H

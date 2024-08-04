@@ -2,8 +2,8 @@
 // Created by scythe on 15/07/23.
 //
 
-#ifndef MAGNETAR_CORE_WORKER_CORE_H
-#define MAGNETAR_CORE_WORKER_CORE_H
+#ifndef VIBE_CORE_WORKER_CORE_H
+#define VIBE_CORE_WORKER_CORE_H
 
 #include "../main_process.h"
 
@@ -18,4 +18,4 @@ namespace workers {
     eWorkers<Template>::eWorkers() = default;
 }
 
-#endif //MAGNETAR_CORE_WORKER_CORE_H
+#endif //VIBE_CORE_WORKER_CORE_H

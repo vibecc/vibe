@@ -1,23 +1,23 @@
 #ifndef PARAM_PROCESSING_HPP
 #define PARAM_PROCESSING_HPP
 
-constexpr const char* GET_TYPE = "GET";
-constexpr const char* POST_TYPE = "POST";
-constexpr const char* PUT_TYPE  = "PUT";
-constexpr const char* DELETE_TYPE = "DELETE";
-constexpr const char* PATCH_TYPE = "PATCH";
+constexpr auto GET_TYPE = "GET";
+constexpr auto POST_TYPE = "POST";
+constexpr auto PUT_TYPE  = "PUT";
+constexpr auto DELETE_TYPE = "DELETE";
+constexpr auto PATCH_TYPE = "PATCH";
 
-constexpr const char* COPY_TYPE = "COPY";
-constexpr const char* HEAD_TYPE = "HEAD";
-constexpr const char* OPTIONS_TYPE = "OPTIONS";
-constexpr const char* LINK_TYPE = "LINK";
-constexpr const char* UNLINK_TYPE = "UNLINK";
-constexpr const char* PURGE_TYPE = "PURGE";
+constexpr auto COPY_TYPE = "COPY";
+constexpr auto HEAD_TYPE = "HEAD";
+constexpr auto OPTIONS_TYPE = "OPTIONS";
+constexpr auto LINK_TYPE = "LINK";
+constexpr auto UNLINK_TYPE = "UNLINK";
+constexpr auto PURGE_TYPE = "PURGE";
 
-constexpr const char* X_WWW_FORM = "application/x-www-form-urlencoded";
-constexpr const char* PLAIN_TEXT = "text/plain";
-constexpr const char* RAW_ERROR = "data=null";
-constexpr const char* RAW_TARGET = "data=";
+constexpr auto X_WWW_FORM = "application/x-www-form-urlencoded";
+constexpr auto PLAIN_TEXT = "text/plain";
+constexpr auto RAW_ERROR = "data=null";
+constexpr auto RAW_TARGET = "data=";
 
 #define STR_ERR "-1"
 #include <algorithm>
