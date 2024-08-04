@@ -7,8 +7,8 @@
 
 #include "../include/vibe/util/nterminal.h"
 
-const char* neosys::process::log_path = "log_cv.log";
-std::string neosys::process::path = "PATH=$PATH:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin";
+const char* const neosys::process::log_path = "log_cv.log";
+const std::string neosys::process::path = "PATH=$PATH:/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin";
 
 
 std::mt19937& neosys::process::get_rng() {
@@ -24,7 +24,7 @@ unsigned long neosys::process::random()  {
 int neosys::process::run_command(const std::vector<const char*> &args, const std::string& _path) {
     int status;
 
-    if (args.empty() || !args[0]) {
+    if (args.empty() || !static_cast<bool>(args[0])) {
         return VB_NVALUE;
     }
 
@@ -36,12 +36,13 @@ int neosys::process::run_command(const std::vector<const char*> &args, const std
             if (retval == pid) break;
             if (errno == EINTR) continue;
         }
-        if (retval == VB_NVALUE || !(WIFEXITED(status) && WEXITSTATUS(status) == 0)) {
+        if (retval == VB_NVALUE || !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
             return VB_NVALUE;
         }
     } else {
 
         std::vector<char*> mutable_args;
+        mutable_args.reserve(args.size());
         for (const char* arg : args) {
             mutable_args.push_back(const_cast<char*>(arg));
         }
@@ -65,7 +66,8 @@ int neosys::process::run_command(const std::vector<const char*> &args, const std
         }
         close(fd);
 
-        if (char *export_path[] = {&path[0], nullptr}; execve(mutable_args[0], mutable_args.data(), export_path) == VB_NVALUE) {
+        const std::array<const char*, 2> export_path = {path.c_str(), nullptr};
+        if (execve(mutable_args[0], mutable_args.data(),  const_cast<char* const*>(export_path.data())) == VB_NVALUE) {
             std::cerr << strerror(errno) << std::endl;
             _Exit(127);
         }
@@ -91,7 +93,7 @@ int neosys::process::writeFile(const std::string &path, const std::string &conte
         std::ofstream write_stream;
         write_stream.open(path.c_str());
 
-        for (auto &it : content)
+        for (const auto &it : content)
             write_stream << it;
 
         write_stream.close();
