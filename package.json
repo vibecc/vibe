@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "description": "User-friendly and compact C++ Web Framework",
   "scripts": {
-    "build": "cmake . && cmake --build .",
-    "install": "cmake --install",
+    "build": "cmake . . && cmake --build .",
+    "install": "make install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

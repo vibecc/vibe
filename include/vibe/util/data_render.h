@@ -31,7 +31,7 @@ public:
 
         if(!std::filesystem::exists(path)) return notify_html::noFIle(path);        
 
-        string body = readFile(path);
+        string body = process::readFile(path);
         string buffer{};
 
         for (size_t iterator = 0; iterator < variables.size(); iterator++) {
@@ -87,17 +87,6 @@ public:
         return newest;
     } 
 
-
-    static string readFile(const string& target) {
-        std::ifstream reader(target.c_str());
-            string chunk;
-            string module;
-        while (getline(reader, chunk)) {
-             module += chunk;
-            }
-        reader.close();
-        return module; 
-    }
 
 };
 

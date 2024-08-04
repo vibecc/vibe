@@ -16,7 +16,7 @@ param_box Param_t:: operator[](int index) {
        return nuevo;
 }
 
-void Param_t::setConten(vector<std::pair<string,string>> &list) {
+void Param_t::setContent(vector<std::pair<string,string>> &list) {
     _list.clear();
     _list = list;
 }

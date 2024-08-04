@@ -7,18 +7,19 @@
 #include <sys/epoll.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
-#include <errno.h>
 #include <stdexcept>
 
 
 #include <memory>
 #include <unistd.h>
 #include <string>
+#include <sstream>
 #include <cstring>
 #include <functional>
 
 #include <iostream>
 #include <vector>
+#include <array>
 #include <mutex>
 
 using std::string;
@@ -40,7 +41,7 @@ constexpr int MG_OK = 0x0;
 constexpr int DEF_BUFFER_SIZE = 0x400;
 constexpr int UnCATCH_ERROR_CH = -0x42;
 
-[[maybe_unused]] constexpr const char* SOCK_ERR = "_ERROR";
+[[maybe_unused]] constexpr auto SOCK_ERR = "_ERROR";
 
 class Engine {
 
@@ -104,8 +105,8 @@ class Server final : public Engine {
     [[maybe_unused]] inline void setSocketId(int const identity) { socket_id.reset(new int(identity)); }
 
      void setSessions(int);
-     void sendResponse(const string&);
-     void setResponse(char buffer[DEF_BUFFER_SIZE]);
+     void sendResponse(const string&) const;
+     void setResponse(const std::array<char, DEF_BUFFER_SIZE> &buffer);
 
      inline void setEpollEvents(std::vector<epoll_event> const &e){events = e;}
      inline void setEpollfd(int const arg) noexcept { epoll_fd = arg; }
@@ -124,36 +125,44 @@ class Server final : public Engine {
 };
 
 
-[[maybe_unused]] constexpr const char* const HTML = "text/html; charset=utf-8 ";
-constexpr const char* JSON = "application/json ";
+[[maybe_unused]] constexpr auto HTML = "text/html; charset=utf-8 ";
+constexpr auto JSON = "application/json ";
 
 struct [[maybe_unused]] WEB {
 
     explicit WEB()= default;
 
     [[maybe_unused]] static string json(const string& _txt, const string& status="200 OK") {
-      return       "HTTP/1.1 "+status+"\n"
-                   "Server: Vibe/1.0\n"
-                   "Content-Type: "+ JSON  +"\n"
-                   "Content-Length: " + std::to_string(_txt.length()) + "\n"
-                   "Accept-Ranges: bytes\n" +
-                   "Connection: close\n"
-                   "\n" +
-                   _txt;
+        std::stringstream base;
+        base
+        << "HTTP/1.1 " << status <<"\n"
+        << "Server: Vibe/1.0\n"
+        << "Content-Type: " << JSON <<"\n"
+        << "Content-Length: " << std::to_string(_txt.length()) << "\n"
+        << "Accept-Ranges: bytes\n"
+        << "Connection: close\n"
+        << "\n"
+        << _txt;
+
+      return  base.str();
      }
 
 
     [[maybe_unused]] static string custom(const string& _txt, const string& type, const string& headers,  const string& status="200 OK"){
-           return  "HTTP/1.1 "+status+"\n"
-                   "Server: Vibe/1.0\n"
-                   "Content-Type: "+type+"\n"
-                   "Content-Length: " + std::to_string(_txt.length()) + "\n"
-                   "Accept-Ranges: bytes\n" +
-                    headers
-                    +
-                   "Connection: close\n"
-                   "\n" +
-                   _txt;
+
+        std::stringstream base;
+        base
+        << "HTTP/1.1 " << status << "\n"
+        << "Server: Vibe/1.0\n"
+        << "Content-Type: " << type << "\n"
+        << "Content-Length: " << std::to_string(_txt.length()) << "\n"
+        << "Accept-Ranges: bytes\n"
+        << headers
+        << "Connection: close\n"
+        << "\n"
+        <<_txt;
+
+           return base.str();
      }     
 };
 
@@ -171,9 +180,9 @@ struct HEADERS_MG {
     }
 };
 
-[[maybe_unused]] typedef HEADERS_MG<string> Headers;
+using Headers = HEADERS_MG<string>;
 
-[[maybe_unused]] constexpr const char* const HTTP_ERROR = "HTTP/1.1 400 BAD\n"
+[[maybe_unused]] constexpr auto HTTP_ERROR = "HTTP/1.1 400 BAD\n"
                            "Server: Vibe/1.0\n"
                            "Content-Type: application/json\n"
                            "Content-Length: 25\n"
