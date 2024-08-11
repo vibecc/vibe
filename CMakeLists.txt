@@ -17,9 +17,10 @@ file(GLOB_RECURSE SOURCES
         "${CMAKE_SOURCE_DIR}/sources/*.cpp"
 )
 
+file(GLOB_RECURSE HEADERS
+        "${CMAKE_SOURCE_DIR}/include/vibe/*.h")
 
-add_library(vibe STATIC ${SOURCES}
-        include/vibe/vibe.h)
+add_library(vibe STATIC ${SOURCES} ${HEADERS})
 
 install(TARGETS vibe
         ARCHIVE DESTINATION lib
