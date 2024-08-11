@@ -15,13 +15,15 @@ using std::make_unique;
 using std::string;
 
 using workers::eWorkers;
+using workers::RoutesMap;
 
 template <class T>
 class Vibe {
 
     shared_ptr<::eWorkers<T>> eWorkers = nullptr;
 
-    std::unordered_map<string, std::unique_ptr<listen_routes>> routes;
+    shared_ptr<RoutesMap> routes;
+
     std::shared_ptr<T> tcpControl;
     std::shared_ptr<HTTP_QUERY> qProcess = nullptr;
 
@@ -69,7 +71,10 @@ template <class T>
 
 int Vibe<T>::http_response(const string &endpoint, MiddlewareList middlewareList, const string& type) {
     try {
-        routes[ endpoint + type ] = make_unique<listen_routes>( endpoint, std::move(middlewareList), type);
+        if (routes == nullptr)
+            routes = make_shared<RoutesMap>();
+
+        routes->operator[](endpoint + type) = make_unique<listen_routes>( endpoint, std::move(middlewareList), type);
     }
     catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
@@ -151,6 +156,7 @@ void Vibe<T>::tcpInt() {
     tcpControl->setPort(PORT);
     tcpControl->setSessions(SESSION);
 
+    routes = make_shared<RoutesMap>();
     eWorkers = make_shared<::eWorkers<T>>();
     eWorkers->Main =make_unique<workers::pMain_t<T>>(tcpControl, routes);
 
