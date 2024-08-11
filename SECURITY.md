@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-At Vibe, we take security seriously. If you discover a security vulnerability within the Vibe framework, please send an email to [security@example.com](mailto:security@example.com) with a detailed description of the vulnerability and steps to reproduce it. Our security team will review and respond to your report promptly.
+At Vibe, we take security seriously. If you discover a security vulnerability within the Vibe framework, please send an email to [bohordo.png@gmail.com](mailto:bohordo.png@gmail.com) with a detailed description of the vulnerability and steps to reproduce it. Our security team will review and respond to your report promptly.
 
 ## Supported Versions
 
@@ -12,7 +12,7 @@ The following versions of Vibe are currently supported with security updates:
 
 ## Reporting a Security Concern
 
-If you have a general security concern or have identified a potential security issue that does not qualify as a vulnerability, please reach out to [security@example.com](mailto:security@example.com) with the details. We appreciate your efforts in helping us maintain the security of the Vibe framework.
+If you have a general security concern or have identified a potential security issue that does not qualify as a vulnerability, please reach out to [bohordo.png@gmail.com](mailto:bohordo.png@gmail.com) with the details. We appreciate your efforts in helping us maintain the security of the Vibe framework.
 
 ## Responsible Disclosure
 
@@ -21,4 +21,4 @@ We encourage responsible disclosure of security vulnerabilities. We kindly ask t
 ## Contact Us
 
 
-For any security-related inquiries or concerns, please contact us at [security@example.com](mailto:security@example.com).
+For any security-related inquiries or concerns, please contact us at [bohordo.png@gmail.com](mailto:bohordo.png@gmail.com).
