@@ -73,7 +73,7 @@ struct utility_t {
     [[maybe_unused]] static string guard_route(const std::chrono::duration<double>::rep seconds, string msg = "") {
 
     std::stringstream message;
-    message << R"lit({"message":")lit"<< string(not msg.empty() ? std::move(msg) : "wait, this route has a " + std::to_string(seconds)+" second cooldown") << R"lit("})lit";
+    message << R"lit({"message":")lit"<< string(not msg.empty() ? std::move(msg) : "wait, this route has a " + std::to_string(static_cast<int>(seconds))+" second cooldown") << R"lit("})lit";
 
     return prepare_basic( message.str(), "application/json", "", "401");
   }
