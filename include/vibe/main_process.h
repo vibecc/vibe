@@ -35,12 +35,12 @@ using RoutesMap = std::unordered_map<string, std::unique_ptr<listen_routes>>;
         unsigned short int next_register;
 
         std::vector<epoll_event> events;
-        RoutesMap  &routes;
+        std::shared_ptr<RoutesMap>  routes;
         std::shared_ptr<T> connection;
 
     public:
 
-        explicit pMain_t(const std::shared_ptr<T> &conn, std::unordered_map<string, std::unique_ptr<listen_routes>>& _routes) :
+        explicit pMain_t(const std::shared_ptr<T> &conn, const shared_ptr<RoutesMap> &_routes) :
 
         epoll_fd(epoll_create1(0)),
         next_register(enums::neo::eSize::DEF_REG),
@@ -146,7 +146,7 @@ using RoutesMap = std::unordered_map<string, std::unique_ptr<listen_routes>>;
 
         }
 
-                 static void ExecuteRoute(const shared_ptr<T> &base,const shared_ptr<HTTP_QUERY>&qProcess, const RoutesMap& routes )  {
+                 static void ExecuteRoute(const shared_ptr<T> &base,const shared_ptr<HTTP_QUERY>&qProcess, const shared_ptr<RoutesMap> &routes)  {
 
                                     string send_target = ERROR_GET;
 
@@ -158,7 +158,7 @@ using RoutesMap = std::unordered_map<string, std::unique_ptr<listen_routes>>;
 
                                     auto [type, route] = HTTP_QUERY::route_refactor(socket_response);
 
-                                        if(const auto itr = routes.find(route + type); itr != routes.end()) {
+                                        if(const auto itr = routes->find(route + type); itr != routes->end()) {
 
                                           if(not timeGuard(itr)) {
 
