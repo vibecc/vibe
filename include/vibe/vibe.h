@@ -3,10 +3,8 @@
 
 #include "sockets.h"
 #include "routes.hpp"
-#include "util/request.hpp"
+#include "request/router_epoll.h"
 #include "util/enums.h"
-#include "util/worker_core.h"
-#include <thread>
 #include <memory>
 #include <string>
 
@@ -14,18 +12,14 @@ using std::make_shared;
 using std::make_unique;
 using std::string;
 
-using workers::eWorkers;
 using workers::RoutesMap;
 
 template <class T>
 class Vibe {
 
-    shared_ptr<::eWorkers<T>> eWorkers = nullptr;
-
+    shared_ptr<workers::RouterEpoll<T>> router_epoll;
     shared_ptr<RoutesMap> routes;
-
     std::shared_ptr<T> tcpControl;
-    std::shared_ptr<HTTP_QUERY> qProcess = nullptr;
 
     uint16_t PORT{enums::neo::eSize::DEF_PORT};
 
@@ -132,9 +126,9 @@ template <class T>
 
 template <class T>
 void Vibe<T>::listen() {
-    std::thread _main(eWorkers->Main->getMainProcess(qProcess));
-    _main.join();
+   router_epoll->getMainProcess(routes);
 }
+
 
 template <class T>
 int Vibe<T>::setPort(const uint16_t _port) noexcept {
@@ -157,12 +151,9 @@ void Vibe<T>::tcpInt() {
     tcpControl->setSessions(SESSION);
 
     routes = make_shared<RoutesMap>();
-    eWorkers = make_shared<::eWorkers<T>>();
-    eWorkers->Main =make_unique<workers::pMain_t<T>>(tcpControl, routes);
-
-
+    router_epoll = make_shared<workers::RouterEpoll<T>>(tcpControl);
 }
-using Router = Vibe<Server>;
+using Router  = Vibe<Server>;
 using Convert = utility_t;
 
 

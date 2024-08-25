@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include "parameters.hpp"
-#include "sysprocess.h"
+#include "../util/sysprocess.h"
 
 using std::string;
 using std::vector;
