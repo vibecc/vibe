@@ -7,6 +7,7 @@
 #include <sys/epoll.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <memory>
 #include <stdexcept>
 
 
@@ -64,10 +65,11 @@ class Engine {
         virtual ~Engine() = default;
 
 
-    [[maybe_unused]] [[nodiscard]] int
+    [[maybe_unused]] int
              setBuffer(int),
-             setPort(uint16_t),
-             getPort() const;
+             setPort(uint16_t);
+
+    [[nodiscard]] int getPort() const;
 
         virtual int on() = 0;
         virtual void getResponseProcessing() = 0;
@@ -102,7 +104,7 @@ class Server final : public Engine {
 
     [[maybe_unused]] [[nodiscard]] inline int getDescription() const {  return *socket_id;  }
     [[maybe_unused]] inline shared_ptr<int> getSocketId() { return socket_id; }
-    [[maybe_unused]] inline void setSocketId(int const identity) { socket_id.reset(new int(identity)); }
+    [[maybe_unused]] inline void setSocketId(int const identity) { socket_id = std::make_shared<int>(identity); }
 
      void setSessions(int);
      void sendResponse(const string&) const;

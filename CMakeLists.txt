@@ -18,8 +18,8 @@ file(GLOB_RECURSE SOURCES
 )
 
 file(GLOB_RECURSE HEADERS
-        "${CMAKE_SOURCE_DIR}/include/vibe/*.h")
-
+        "${CMAKE_SOURCE_DIR}/include/vibe/*.h"
+)
 add_library(vibe STATIC ${SOURCES} ${HEADERS})
 
 install(TARGETS vibe
