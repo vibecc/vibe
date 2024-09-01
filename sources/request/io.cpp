@@ -20,7 +20,6 @@ void RequestIO::Dispatch(const int id, epoll_event &event) const {
         this->Process(id, event);
     });
     task.get();
-
 }
 
 

@@ -93,6 +93,33 @@ In the `examples/` folder, you'll find examples of how to use Vibe for different
 
 <img alt="Linux" src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
 
+## Testing
+
+cmake shell basic commands
+```shell
+cmake -DTESTING=ON -S. -B build 
+cmake --build build/
+cd build/
+ctest
+```
+
+with NPM
+
+```shell
+npm run build
+npm run test
+```
+
+### Debug
+
+for debug
+```shell
+npm run dev:run
+```
+
+and modify the file tests/debug.cpp
+
+
 ## Contribution
 
 Contributions are welcome! If you want to contribute to Vibe, please follow these guidelines:

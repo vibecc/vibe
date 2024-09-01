@@ -13,7 +13,6 @@ namespace enums {
             OK = 0x0,
             ERROR = -0x1,
             NA = 0x2,
-            UKNOW = 0x3
         };
         enum eSize {
             BUFFER = 0x800,
@@ -25,6 +24,10 @@ namespace enums {
         enum eStatus {
             START = 0x1,
             STOP = 0x0
+        };
+        enum LISTEN_TYPE {
+            WHILE,
+            UNIQUE
         };
     };
 
