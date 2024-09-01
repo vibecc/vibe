@@ -22,6 +22,64 @@ file(GLOB_RECURSE HEADERS
 )
 add_library(vibe STATIC ${SOURCES} ${HEADERS})
 
+option(TESTING "Enable testing" OFF)
+if (TESTING)
+
+    enable_testing()
+    add_executable(main tests/main_test.cpp)
+    target_link_libraries(
+            main
+            vibe
+    )
+
+    include(FetchContent)
+
+
+    find_package(GTest  QUIET)
+
+    if (NOT GTest_FOUND)
+
+        message(STATUS "extracting https://github.com/google/googletest.git")
+        FetchContent_Declare(
+                googletest
+                GIT_REPOSITORY https://github.com/google/googletest.git
+                GIT_TAG v1.15.2
+        )
+        FetchContent_MakeAvailable(googletest)
+        message(STATUS "using -> build/ [gtest]")
+    else ()
+        message(STATUS "#### using local GTest: In case of error verify your installation")
+    endif ()
+
+    target_link_libraries(main GTest::gtest_main)
+    include(GoogleTest)
+    gtest_discover_tests(main)
+
+
+    find_package(CURL QUIET)
+    if ( NOT CURL_FOUND )
+
+        message( STATUS "extracting https://github.com/curl/curl.git")
+        FetchContent_Declare(
+                curl
+                GIT_REPOSITORY https://github.com/curl/curl.git
+                GIT_TAG 83bedbd
+        )
+        FetchContent_MakeAvailable(curl)
+        message(STATUS "using -> build/ [curl]")
+    else ()
+        message(STATUS "#### using local curl: In case of error with .so.4 verify your installation curl --version")
+    endif ()
+
+    target_link_libraries(main CURL::libcurl)
+
+else ()
+
+    add_executable(vibex tests/debug.cpp)
+    target_link_libraries(vibex vibe)
+
+endif ()
+
 install(TARGETS vibe
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib

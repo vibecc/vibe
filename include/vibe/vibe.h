@@ -8,11 +8,11 @@
 #include <memory>
 #include <string>
 
-using std::make_shared;
-using std::make_unique;
+using std::make_shared, std::make_unique;
 using std::string;
 
-using workers::RoutesMap;
+using workers::RoutesMap, workers::BUFFER, workers::SESSION;
+using enums::neo;
 
 template <class T>
 class Vibe {
@@ -21,7 +21,7 @@ class Vibe {
     shared_ptr<RoutesMap> routes;
     std::shared_ptr<T> tcpControl;
 
-    uint16_t PORT{enums::neo::eSize::DEF_PORT};
+    uint16_t PORT{neo::DEF_PORT};
 
     void tcpInt();
 
@@ -47,12 +47,14 @@ public:
     int setPort(uint16_t) noexcept;
     [[nodiscard]] [[maybe_unused]] inline uint16_t getPort() const noexcept{return PORT;};
     void listen();
+    void listenOne();
+    void setListenStatus(neo::eStatus);
 
 };
 
 template <class T>
 [[maybe_unused]] Vibe<T>::Vibe(const uint16_t port) {
-    if (port >= enums::neo::eSize::MIN_PORT) { PORT = port; }
+    if (port >= neo::MIN_PORT) { PORT = port; }
     tcpInt();
 }
 
@@ -72,9 +74,9 @@ int Vibe<T>::http_response(const string &endpoint, MiddlewareList middlewareList
     }
     catch (const std::exception &e) {
         std::cerr << e.what() << '\n';
-        return enums::neo::eReturn::ERROR;
+        return neo::ERROR;
     }
-    return enums::neo::eReturn::OK;
+    return neo::OK;
 }
 
 template <class T>
@@ -128,19 +130,29 @@ template <class T>
 void Vibe<T>::listen() {
    router_epoll->getMainProcess(routes);
 }
+template <class T>
+void Vibe<T>::listenOne() {
+    router_epoll->getMainProcess(routes, neo::UNIQUE);
+}
+
+template <class T>
+void Vibe<T>::setListenStatus(neo::eStatus _status) {
+    router_epoll->setListenStatus(_status);
+}
 
 
 template <class T>
 int Vibe<T>::setPort(const uint16_t _port) noexcept {
-    if (_port >= enums::neo::eSize::MIN_PORT) {
+    if (_port >= neo::MIN_PORT) {
         PORT = _port;
         if(tcpControl != nullptr) {
             tcpControl->setPort(PORT);
-            return enums::neo::eReturn::OK;
+            return neo::OK;
         }
     }
-    return enums::neo::eReturn::ERROR;
+    return neo::ERROR;
 }
+
 
 template<class T>
 void Vibe<T>::tcpInt() {

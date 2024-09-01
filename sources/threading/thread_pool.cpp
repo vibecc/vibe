@@ -33,7 +33,7 @@ ThreadPool::ThreadPool(const size_t threads) : size_(threads), stop_(false) {
 ThreadPool::~ThreadPool() {
 
     stop_.store(true);
-
+    condition_.notify_all();
     for(thread &thread : threads_)
       thread.join();
 }
